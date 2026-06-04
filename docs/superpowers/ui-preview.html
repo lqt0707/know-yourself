@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>知己 — 你的 AI 自我认知伴侣</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       知己 Design Tokens
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    :root {
+      --warm-bg:          #F5EFE6;
+      --warm-surface:     #FAF5EE;
+      --warm-border:      #E8D9C5;
+      --warm-text:        #3D2B1F;
+      --warm-text-muted:  #8B6E5A;
+      --warm-accent:      #C07850;
+      --warm-accent-hover:#A8623E;
+      --warm-accent-light:#E8B896;
+      --warm-user-bubble: #C07850;
+      --warm-ai-bubble:   #FAF0E4;
+      --sidebar-bg:       #EDE3D4;
+      --shadow-warm:      rgba(120, 70, 30, 0.12);
+      --shadow-warm-md:   rgba(100, 55, 20, 0.16);
+      --shadow-warm-lg:   rgba(90, 45, 15, 0.20);
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       Reset & Base
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Lora', 'Noto Serif SC', serif;
+      background-color: var(--warm-bg);
+      color: var(--warm-text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       View Toggle
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .view { display: none; }
+    .view.active { display: flex; }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       LOGIN VIEW
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #login-view {
+      min-height: 100vh;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 30%, #EDD9BD 0%, transparent 65%),
+        radial-gradient(ellipse 50% 40% at 20% 80%, #E8C9A8 0%, transparent 55%),
+        radial-gradient(ellipse 40% 50% at 80% 70%, #F0E0CC 0%, transparent 55%),
+        var(--warm-bg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* decorative background ink strokes */
+    #login-view::before {
+      content: '知';
+      font-family: 'Noto Serif SC', serif;
+      font-size: 28rem;
+      font-weight: 700;
+      color: rgba(120, 70, 30, 0.035);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      user-select: none;
+      line-height: 1;
+    }
+
+    .login-card {
+      position: relative;
+      background: var(--warm-surface);
+      border: 1px solid var(--warm-border);
+      border-radius: 20px;
+      padding: 3.5rem 3rem 2.75rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow:
+        0 2px 4px var(--shadow-warm),
+        0 8px 24px var(--shadow-warm-md),
+        0 24px 60px var(--shadow-warm-lg),
+        inset 0 1px 0 rgba(255, 240, 220, 0.8);
+      animation: card-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes card-rise {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* warm paper texture line at top */
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 5%; right: 5%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--warm-accent-light), var(--warm-accent), var(--warm-accent-light), transparent);
+      border-radius: 0 0 2px 2px;
+      opacity: 0.6;
+    }
+
+    .login-wordmark {
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .login-wordmark h1 {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 4.5rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--warm-text);
+      letter-spacing: 0.12em;
+      background: linear-gradient(160deg, #5C3520 0%, #C07850 45%, #8B4A2A 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .login-wordmark .subtitle {
+      font-family: 'Lora', serif;
+      font-size: 0.875rem;
+      font-style: italic;
+      color: var(--warm-text-muted);
+      letter-spacing: 0.04em;
+      margin-top: 0.5rem;
+    }
+
+    .login-divider {
+      margin: 1.75rem 0;
+      border: none;
+      border-top: 1px solid var(--warm-border);
+      opacity: 0.6;
+    }
+
+    .form-group {
+      margin-bottom: 1.1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-family: 'Lora', serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--warm-text-muted);
+      letter-spacing: 0.05em;
+      margin-bottom: 0.45rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: var(--warm-bg);
+      border: 1.5px solid var(--warm-border);
+      border-radius: 10px;
+      font-family: 'Lora', serif;
+      font-size: 0.92rem;
+      color: var(--warm-text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .form-group input::placeholder {
+      color: var(--warm-accent-light);
+      font-style: italic;
+    }
+
+    .form-group input:focus {
+      border-color: var(--warm-accent);
+      background: var(--warm-surface);
+      box-shadow: 0 0 0 3px rgba(192, 120, 80, 0.14), 0 2px 8px var(--shadow-warm);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 0.9rem 1.5rem;
+      margin-top: 0.5rem;
+      background: linear-gradient(135deg, #C87848 0%, #C07850 50%, #B06840 100%);
+      color: #FDF6EE;
+      border: none;
+      border-radius: 11px;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      box-shadow:
+        0 2px 4px rgba(120, 60, 20, 0.2),
+        0 6px 18px rgba(100, 45, 15, 0.25),
+        inset 0 1px 0 rgba(255, 220, 180, 0.25);
+      transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #B86E3E 0%, #A86030 50%, #9A5228 100%);
+      box-shadow:
+        0 4px 8px rgba(120, 60, 20, 0.25),
+        0 10px 28px rgba(100, 45, 15, 0.3),
+        inset 0 1px 0 rgba(255, 200, 160, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-family: 'Lora', serif;
+      font-size: 0.82rem;
+      color: var(--warm-text-muted);
+    }
+
+    .login-footer a {
+      color: var(--warm-accent);
+      text-decoration: none;
+      font-style: italic;
+      transition: color 0.2s;
+    }
+
+    .login-footer a:hover { color: var(--warm-accent-hover); }
+
+    .preview-toggle {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px dashed var(--warm-border);
+      border-radius: 8px;
+      padding: 0.5rem 1.2rem;
+      font-family: 'Lora', serif;
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--warm-text-muted);
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--warm-accent-light);
+      color: var(--warm-accent);
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       CHAT VIEW
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    #chat-view {
+      height: 100vh;
+      flex-direction: row;
+      overflow: hidden;
+      background: var(--warm-bg);
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--warm-border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1rem;
+      gap: 1.25rem;
+    }
+
+    .sidebar-wordmark {
+      padding: 0.25rem 0.5rem 0.75rem;
+      border-bottom: 1px solid rgba(120, 70, 30, 0.12);
+    }
+
+    .sidebar-wordmark h2 {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      background: linear-gradient(135deg, #5C3520 0%, #C07850 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .sidebar-wordmark .tagline {
+      font-family: 'Lora', serif;
+      font-size: 0.7rem;
+      font-style: italic;
+      color: var(--warm-text-muted);
+      margin-top: 2px;
+    }
+
+    .btn-new-chat {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      width: 100%;
+      padding: 0.65rem 1rem;
+      background: transparent;
+      border: 1.5px solid var(--warm-accent-light);
+      border-radius: 10px;
+      font-family: 'Noto Serif SC', serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--warm-accent);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-new-chat:hover {
+      background: rgba(192, 120, 80, 0.08);
+      border-color: var(--warm-accent);
+      box-shadow: 0 2px 8px var(--shadow-warm);
+    }
+
+    .session-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      overflow-y: auto;
+    }
+
+    .session-list-label {
+      font-family: 'Lora', serif;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--warm-text-muted);
+      text-transform: uppercase;
+      padding: 0 0.5rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .session-item {
+      padding: 0.65rem 0.75rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border: 1px solid transparent;
+    }
+
+    .session-item:hover {
+      background: rgba(120, 70, 30, 0.07);
+    }
+
+    .session-item.active {
+      background: var(--warm-surface);
+      border-color: var(--warm-border);
+      box-shadow: 0 1px 4px var(--shadow-warm);
+    }
+
+    .session-title {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--warm-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .session-item.active .session-title {
+      color: var(--warm-accent);
+    }
+
+    .session-date {
+      font-family: 'Lora', serif;
+      font-size: 0.68rem;
+      font-style: italic;
+      color: var(--warm-text-muted);
+      margin-top: 2px;
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid rgba(120, 70, 30, 0.1);
+      padding-top: 0.75rem;
+    }
+
+    .btn-logout {
+      background: transparent;
+      border: none;
+      font-family: 'Lora', serif;
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--warm-text-muted);
+      cursor: pointer;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+      width: 100%;
+      text-align: left;
+    }
+
+    .btn-logout:hover {
+      color: var(--warm-accent);
+      background: rgba(120, 70, 30, 0.06);
+    }
+
+    /* ── Chat Main ── */
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse 60% 40% at 70% 20%, rgba(232, 200, 160, 0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 50% at 20% 80%, rgba(220, 185, 145, 0.12) 0%, transparent 55%),
+        var(--warm-bg);
+    }
+
+    .chat-header {
+      padding: 1.1rem 1.75rem;
+      border-bottom: 1px solid var(--warm-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(250, 245, 238, 0.7);
+      backdrop-filter: blur(8px);
+      flex-shrink: 0;
+    }
+
+    .chat-header-title {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--warm-text);
+      letter-spacing: 0.04em;
+    }
+
+    .chat-header-meta {
+      font-family: 'Lora', serif;
+      font-size: 0.72rem;
+      font-style: italic;
+      color: var(--warm-text-muted);
+    }
+
+    .btn-back-login {
+      background: transparent;
+      border: 1px solid var(--warm-border);
+      border-radius: 7px;
+      padding: 0.3rem 0.7rem;
+      font-family: 'Lora', serif;
+      font-size: 0.72rem;
+      font-style: italic;
+      color: var(--warm-text-muted);
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-back-login:hover {
+      border-color: var(--warm-accent-light);
+      color: var(--warm-accent);
+    }
+
+    /* ── Messages ── */
+    .messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2rem 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      scroll-behavior: smooth;
+    }
+
+    .messages-area::-webkit-scrollbar { width: 5px; }
+    .messages-area::-webkit-scrollbar-track { background: transparent; }
+    .messages-area::-webkit-scrollbar-thumb { background: var(--warm-border); border-radius: 99px; }
+
+    .message-row {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 75%;
+    }
+
+    .message-row.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message-row.ai {
+      align-self: flex-start;
+    }
+
+    /* AI Avatar */
+    .ai-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7A4020 0%, #C07850 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(100, 45, 15, 0.25);
+      align-self: flex-end;
+    }
+
+    .ai-avatar span {
+      font-family: 'Noto Serif SC', serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #FDF6EE;
+      letter-spacing: 0;
+    }
+
+    /* Bubble base */
+    .bubble {
+      padding: 0.9rem 1.2rem;
+      border-radius: 18px;
+      line-height: 1.7;
+      font-family: 'Lora', serif;
+      font-size: 0.9rem;
+      position: relative;
+    }
+
+    /* User bubble */
+    .bubble.user {
+      background: linear-gradient(135deg, #CA8055 0%, #C07850 60%, #B46840 100%);
+      color: #FDF6EE;
+      border-radius: 18px 18px 4px 18px;
+      box-shadow:
+        0 2px 4px rgba(120, 55, 20, 0.2),
+        0 6px 16px rgba(100, 45, 15, 0.22),
+        inset 0 1px 0 rgba(255, 220, 180, 0.2);
+    }
+
+    /* AI bubble */
+    .bubble.ai {
+      background: var(--warm-ai-bubble);
+      color: var(--warm-text);
+      border: 1px solid rgba(200, 170, 130, 0.4);
+      border-radius: 18px 18px 18px 4px;
+      box-shadow:
+        0 2px 4px var(--shadow-warm),
+        0 6px 20px rgba(100, 60, 20, 0.1),
+        inset 0 1px 0 rgba(255, 248, 235, 0.9);
+    }
+
+    /* paper texture effect on AI bubble */
+    .bubble.ai::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 27px,
+          rgba(180, 140, 90, 0.04) 27px,
+          rgba(180, 140, 90, 0.04) 28px
+        );
+      pointer-events: none;
+    }
+
+    .message-time {
+      font-family: 'Lora', serif;
+      font-size: 0.65rem;
+      font-style: italic;
+      color: var(--warm-text-muted);
+      opacity: 0.7;
+      margin-top: 0.35rem;
+      padding: 0 0.25rem;
+    }
+
+    .message-row.user .message-time { text-align: right; }
+
+    .message-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Typing / Streaming dots ── */
+    .typing-dots {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0.9rem 1.2rem;
+    }
+
+    .typing-dots span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--warm-accent-light);
+      animation: dot-pulse 1.4s ease-in-out infinite both;
+    }
+
+    .typing-dots span:nth-child(1) { animation-delay: 0s; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dot-pulse {
+      0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+      40%           { transform: scale(1.1); opacity: 1; background: var(--warm-accent); }
+    }
+
+    /* ── Input Area ── */
+    .input-area {
+      padding: 1rem 1.75rem 1.25rem;
+      background: rgba(250, 245, 238, 0.8);
+      border-top: 1px solid var(--warm-border);
+      backdrop-filter: blur(8px);
+      flex-shrink: 0;
+    }
+
+    .input-wrapper {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.75rem;
+      background: var(--warm-surface);
+      border: 1.5px solid var(--warm-border);
+      border-radius: 16px;
+      padding: 0.75rem 0.75rem 0.75rem 1.1rem;
+      box-shadow:
+        0 2px 8px var(--shadow-warm),
+        inset 0 1px 0 rgba(255, 248, 235, 0.8);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--warm-accent-light);
+      box-shadow:
+        0 0 0 3px rgba(192, 120, 80, 0.1),
+        0 4px 12px var(--shadow-warm-md);
+    }
+
+    .chat-textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: 'Lora', serif;
+      font-size: 0.9rem;
+      color: var(--warm-text);
+      line-height: 1.6;
+      min-height: 1.5rem;
+      max-height: 8rem;
+      overflow-y: auto;
+    }
+
+    .chat-textarea::placeholder {
+      color: var(--warm-accent-light);
+      font-style: italic;
+    }
+
+    .btn-send {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #C87848 0%, #C07850 100%);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(120, 60, 20, 0.25);
+      transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+    }
+
+    .btn-send:hover {
+      background: linear-gradient(135deg, #B86E3E 0%, #A86030 100%);
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(120, 60, 20, 0.3);
+    }
+
+    .btn-send:active { transform: scale(0.97); }
+
+    .btn-send svg {
+      width: 16px;
+      height: 16px;
+      fill: #FDF6EE;
+    }
+
+    .input-hint {
+      font-family: 'Lora', serif;
+      font-size: 0.68rem;
+      font-style: italic;
+      color: var(--warm-text-muted);
+      opacity: 0.7;
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+
+    /* ── Day Divider ── */
+    .day-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--warm-text-muted);
+      font-family: 'Lora', serif;
+      font-size: 0.7rem;
+      font-style: italic;
+      opacity: 0.7;
+    }
+
+    .day-divider::before,
+    .day-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--warm-border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════════════════════════
+       VIEW 1: LOGIN
+       ════════════════════════════════ -->
+  <div id="login-view" class="view active">
+    <div class="login-card">
+      <div class="login-wordmark">
+        <h1>知己</h1>
+        <p class="subtitle">你的 AI 自我认知伴侣</p>
+      </div>
+
+      <hr class="login-divider" />
+
+      <form onsubmit="return false;">
+        <div class="form-group">
+          <label>电子邮箱</label>
+          <input type="email" placeholder="your@email.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" placeholder="请输入密码…" autocomplete="current-password" />
+        </div>
+
+        <button type="button" class="btn-primary" onclick="showChat()">
+          登录
+        </button>
+      </form>
+
+      <div class="login-footer">
+        没有账号？<a href="#">注册</a>
+      </div>
+
+      <div class="preview-toggle">
+        <button class="btn-ghost" onclick="showChat()">→ 预览对话界面</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════
+       VIEW 2: CHAT
+       ════════════════════════════════ -->
+  <div id="chat-view" class="view">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-wordmark">
+        <h2>知己</h2>
+        <p class="tagline">认识自己，遇见自己</p>
+      </div>
+
+      <button class="btn-new-chat">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="6.5" y1="1" x2="6.5" y2="12" />
+          <line x1="1" y1="6.5" x2="12" y2="6.5" />
+        </svg>
+        新对话
+      </button>
+
+      <div class="session-list">
+        <div class="session-list-label">最近的对话</div>
+
+        <div class="session-item active">
+          <div class="session-title">关于孤独感的探索</div>
+          <div class="session-date">今天</div>
+        </div>
+
+        <div class="session-item">
+          <div class="session-title">为什么我总是回避冲突</div>
+          <div class="session-date">昨天</div>
+        </div>
+
+        <div class="session-item">
+          <div class="session-title">我和父母关系的模式</div>
+          <div class="session-date">6月1日</div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" onclick="showLogin()">↩ 退出登录</button>
+      </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="chat-main">
+      <header class="chat-header">
+        <div>
+          <div class="chat-header-title">关于孤独感的探索</div>
+          <div class="chat-header-meta">今天 · 3条消息</div>
+        </div>
+        <button class="btn-back-login" onclick="showLogin()">← 返回登录页</button>
+      </header>
+
+      <div class="messages-area" id="messages">
+
+        <div class="day-divider">今天</div>
+
+        <!-- AI message 1 -->
+        <div class="message-row ai">
+          <div class="ai-avatar"><span>知</span></div>
+          <div class="message-col">
+            <div class="bubble ai">
+              你好。我在这里陪伴你。<br/>
+              今天，有什么想和我分享的吗？哪怕只是一个模糊的感受，也可以从那里开始。
+            </div>
+            <div class="message-time">09:14</div>
+          </div>
+        </div>
+
+        <!-- User message 1 -->
+        <div class="message-row user">
+          <div class="message-col">
+            <div class="bubble user">
+              我最近总是感到很孤独，但周围其实有很多人。我说不清楚为什么。
+            </div>
+            <div class="message-time">09:16</div>
+          </div>
+        </div>
+
+        <!-- AI message 2 -->
+        <div class="message-row ai">
+          <div class="ai-avatar"><span>知</span></div>
+          <div class="message-col">
+            <div class="bubble ai">
+              那种感觉很真实——即使被人群围绕，也可能感受到深深的孤独。<br/><br/>
+              你说"说不清楚"，我很好奇：是像有一堵透明的墙，让你和他人隔开？还是另一种感觉？
+            </div>
+            <div class="message-time">09:17</div>
+          </div>
+        </div>
+
+        <!-- User message 2 -->
+        <div class="message-row user">
+          <div class="message-col">
+            <div class="bubble user">
+              对，就像一堵墙。我能看到他们，他们也看到我，但我们好像触碰不到彼此。
+            </div>
+            <div class="message-time">09:19</div>
+          </div>
+        </div>
+
+        <!-- AI streaming message -->
+        <div class="message-row ai">
+          <div class="ai-avatar"><span>知</span></div>
+          <div class="message-col">
+            <div class="bubble ai">
+              <div class="typing-dots">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /messages-area -->
+
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea
+            class="chat-textarea"
+            placeholder="在这里写下你的想法…"
+            rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();}"
+          ></textarea>
+          <button class="btn-send" aria-label="发送">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="input-hint">按 Enter 发送，Shift+Enter 换行</div>
+      </div>
+
+    </main>
+  </div><!-- /chat-view -->
+
+  <script>
+    function showChat() {
+      document.getElementById('login-view').classList.remove('active');
+      document.getElementById('chat-view').classList.add('active');
+      // scroll messages to bottom
+      const msgs = document.getElementById('messages');
+      if (msgs) msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function showLogin() {
+      document.getElementById('chat-view').classList.remove('active');
+      document.getElementById('login-view').classList.add('active');
+    }
+
+    // Auto-resize textarea
+    document.addEventListener('DOMContentLoaded', () => {
+      const ta = document.querySelector('.chat-textarea');
+      if (ta) {
+        ta.addEventListener('input', () => {
+          ta.style.height = 'auto';
+          ta.style.height = Math.min(ta.scrollHeight, 128) + 'px';
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>
