@@ -22,8 +22,29 @@ export const SCENE_STYLE: Record<string, string> = {
   casual: `当前风格：轻松朋友。自然随性，保持温度和趣味。`,
 }
 
-export function buildSystemPrompt(scene: string, profileSummary?: string): string {
+export function buildSystemPrompt(
+  scene: string,
+  profileSummary?: string,
+  relevantContext?: string
+): string {
   const style = SCENE_STYLE[scene] ?? SCENE_STYLE.casual
   const profile = profileSummary ? `\n\n关于用户的已知信息：\n${profileSummary}` : ''
-  return `${BASE_PERSONA}\n\n${style}${profile}`
+  const context = relevantContext ? `\n\n${relevantContext}` : ''
+  return `${BASE_PERSONA}\n\n${style}${profile}${context}`
+}
+
+export function formatProfileForPrompt(profileData: Record<string, unknown>): string {
+  if (!profileData || Object.keys(profileData).length === 0) return ''
+  const p = profileData as unknown as import('@/types').UserProfile
+  const lines: string[] = []
+  if (p.personality?.traits?.length)
+    lines.push(`性格特征：${p.personality.traits.join('、')}`)
+  if (p.emotional_baseline?.dominant && p.emotional_baseline.dominant !== '未知')
+    lines.push(`情绪基调：${p.emotional_baseline.dominant}`)
+  if (p.emotional_baseline?.triggers?.length)
+    lines.push(`情绪触发点：${p.emotional_baseline.triggers.join('、')}`)
+  const confirmedPatterns = p.patterns?.filter(x => x.confirmed_by_user) ?? []
+  if (confirmedPatterns.length)
+    lines.push(`已确认的行为模式：${confirmedPatterns.map(x => x.description).join('；')}`)
+  return lines.join('\n')
 }

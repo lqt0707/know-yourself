@@ -1,16 +1,24 @@
 'use client'
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { useState, useRef, useEffect } from 'react'
 import { useChatStore } from '@/lib/stores/chat'
 import { createClient } from '@/lib/supabase/client'
 import type { AIMessage, Message } from '@/types'
 
 export function ChatInput() {
   const [input, setInput] = useState('')
-  const { currentSessionId, messages, isStreaming, setStreaming,
-    appendStreamingContent, clearStreamingContent, setMessages } = useChatStore()
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const {
+    currentSessionId, messages, isStreaming,
+    setStreaming, appendStreamingContent, clearStreamingContent, setMessages, addMessage,
+  } = useChatStore()
+
+  useEffect(() => {
+    const ta = textareaRef.current
+    if (!ta) return
+    ta.style.height = 'auto'
+    ta.style.height = Math.min(ta.scrollHeight, 128) + 'px'
+  }, [input])
 
   async function handleSend() {
     const text = input.trim()
@@ -18,6 +26,17 @@ export function ChatInput() {
     setInput('')
     setStreaming(true)
     clearStreamingContent()
+
+    // 乐观更新：立即显示用户消息，不等网络
+    const optimisticMsg: Message = {
+      id: `optimistic-${Date.now()}`,
+      session_id: currentSessionId,
+      user_id: '',
+      role: 'user',
+      content: text,
+      created_at: new Date().toISOString(),
+    }
+    addMessage(optimisticMsg)
 
     const history: AIMessage[] = messages.slice(-10).map(m => ({ role: m.role, content: m.content }))
 
@@ -45,8 +64,10 @@ export function ChatInput() {
             if (data) setMessages(data as Message[])
             break
           }
-          const { text: chunk } = JSON.parse(payload)
-          appendStreamingContent(chunk)
+          try {
+            const { text: chunk } = JSON.parse(payload)
+            appendStreamingContent(chunk)
+          } catch { /* ignore malformed */ }
         }
       }
     } catch (err) {
@@ -57,23 +78,48 @@ export function ChatInput() {
     }
   }
 
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
+  }
+
   return (
-    <div className="border-t p-4">
-      <div className="flex gap-2 items-end">
-        <Textarea
-          placeholder="说点什么..."
+    <div className="chat-input-area">
+      <div className="input-wrapper">
+        <textarea
+          ref={textareaRef}
+          className="chat-textarea"
+          placeholder="在这里写下你的想法…"
           value={input}
           onChange={e => setInput(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
+          onKeyDown={handleKeyDown}
           rows={1}
-          className="resize-none min-h-[44px] max-h-[200px]"
-          disabled={isStreaming}
+          disabled={isStreaming || !currentSessionId}
         />
-        <Button onClick={handleSend} disabled={!input.trim() || isStreaming || !currentSessionId}>
-          发送
-        </Button>
+        <button
+          className="btn-send"
+          onClick={handleSend}
+          disabled={!input.trim() || isStreaming || !currentSessionId}
+          aria-label="发送"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#FDF6EE">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
       </div>
-      <p className="text-xs text-muted-foreground mt-1">Enter 发送，Shift+Enter 换行</p>
+      <p style={{
+        fontFamily: "'Lora', serif",
+        fontSize: '0.68rem',
+        fontStyle: 'italic',
+        color: 'var(--warm-text-muted)',
+        opacity: 0.7,
+        textAlign: 'center',
+        marginTop: '0.5rem',
+      }}>
+        按 Enter 发送，Shift+Enter 换行
+      </p>
     </div>
   )
 }

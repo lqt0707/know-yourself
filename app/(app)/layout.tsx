@@ -5,5 +5,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-  return <div className="flex h-screen bg-background">{children}</div>
+  return (
+    <div style={{ display: 'flex', height: '100vh', background: 'var(--warm-bg)', overflow: 'hidden' }}>
+      {children}
+    </div>
+  )
 }

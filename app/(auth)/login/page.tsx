@@ -4,9 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -34,40 +31,109 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">登录</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-wordmark" style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
+          <h1>知己</h1>
+          <p className="subtitle">你的 AI 自我认知伴侣</p>
+        </div>
+
+        <hr style={{
+          margin: '1.75rem 0',
+          border: 'none',
+          borderTop: '1px solid var(--warm-border)',
+          opacity: 0.6,
+        }} />
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '1.1rem' }}>
+            <label style={{
+              display: 'block',
+              fontFamily: "'Lora', serif",
+              fontSize: '0.78rem',
+              fontWeight: 500,
+              color: 'var(--warm-text-muted)',
+              letterSpacing: '0.05em',
+              marginBottom: '0.45rem',
+            }}>
+              电子邮箱
+            </label>
+            <input
               type="email"
-              placeholder="邮箱"
+              placeholder="your@email.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
+              autoComplete="email"
+              className="warm-input"
             />
-            <Input
+          </div>
+
+          <div style={{ marginBottom: '1.1rem' }}>
+            <label style={{
+              display: 'block',
+              fontFamily: "'Lora', serif",
+              fontSize: '0.78rem',
+              fontWeight: 500,
+              color: 'var(--warm-text-muted)',
+              letterSpacing: '0.05em',
+              marginBottom: '0.45rem',
+            }}>
+              密码
+            </label>
+            <input
               type="password"
-              placeholder="密码"
+              placeholder="请输入密码…"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
+              autoComplete="current-password"
+              className="warm-input"
             />
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? '登录中...' : '登录'}
-            </Button>
-          </form>
-          <p className="mt-4 text-sm text-center text-muted-foreground">
-            没有账号？{' '}
-            <Link href="/register" className="underline">
-              注册
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
+          </div>
+
+          {error && (
+            <p style={{
+              fontSize: '0.82rem',
+              color: '#B45242',
+              marginBottom: '0.75rem',
+              fontFamily: "'Lora', serif",
+              fontStyle: 'italic',
+            }}>
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-warm-primary"
+            style={{ marginTop: '0.5rem' }}
+          >
+            {loading ? '登录中…' : '登录'}
+          </button>
+        </form>
+
+        <p style={{
+          textAlign: 'center',
+          marginTop: '1.5rem',
+          fontFamily: "'Lora', serif",
+          fontSize: '0.82rem',
+          color: 'var(--warm-text-muted)',
+        }}>
+          没有账号？{' '}
+          <Link
+            href="/register"
+            style={{
+              color: 'var(--warm-accent)',
+              textDecoration: 'none',
+              fontStyle: 'italic',
+            }}
+          >
+            注册
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }
